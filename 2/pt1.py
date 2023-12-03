@@ -2,13 +2,11 @@
 only 12 red cubes, 13 green cubes, and 14 blue cubes
 What is the sum of the IDs of those games?
 """
+import logging
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import TypedDict
 from pathlib import Path
 import re
-
-input_file = Path(__file__).parent / "input.txt"
 
 
 class Color(StrEnum):
@@ -91,12 +89,41 @@ def is_sample_set_possible(sample_set: SampleSet, sample_limits: SampleLimits) -
     return all(map(lambda x: is_sample_possible(x, sample_limits), sample_set.samples))
 
 
+def is_game_possible(game: Game, sample_limits: SampleLimits) -> bool:
+    return all(
+        map(lambda x: is_sample_set_possible(x, sample_limits), game.sample_sets)
+    )
+
+
 def main():
+    # config
+    input_file_name = "input.txt"
+    TEST = False
+    if TEST:
+        input_file_name = "example_input_1.txt"
+        logging.basicConfig(level=logging.DEBUG)
     sample_limits: SampleLimits = {
         Color.RED: 12,
         Color.GREEN: 13,
         Color.BLUE: 14,
     }
+    input_file = Path(__file__).parent / input_file_name
+
+    # read games
+    games: list[Game] = []
+    with input_file.open() as f:
+        for line in f:
+            game = parse_line(line)
+            games.append(game)
+
+    # evaluate games
+    sum = 0
+    for game in games:
+        if is_game_possible(game, sample_limits):
+            sum += game.number
+        else:
+            logging.debug(f"Game {game.number} not possible!")
+    print(sum)
 
 
 if __name__ == "__main__":
