@@ -1,4 +1,9 @@
-from pt1 import has_symbol_neighbor, get_number_mask
+from pt1 import (
+    has_symbol_neighbor,
+    get_number_mask,
+    get_symbol_neighbor_mask,
+    get_numbers,
+)
 
 
 def test_get_number_mask():
@@ -14,25 +19,25 @@ def test_get_number_mask():
         [".", ".", ".", "$", ".", "*", ".", ".", ".", "."],
         [".", "6", "6", "4", ".", "5", "9", "8", ".", "."],
     ]
-    n = None
+    n = False
     number_mask = [
-        [0, 0, 0, n, n, 1, 1, 1, n, n],
+        [1, 1, 1, n, n, 2, 2, 2, n, n],
         [n, n, n, n, n, n, n, n, n, n],
-        [n, n, 2, 2, n, n, 3, 3, 3, n],
+        [n, n, 3, 3, n, n, 4, 4, 4, n],
         [n, n, n, n, n, n, n, n, n, n],
-        [4, 4, 4, n, n, n, n, n, n, n],
-        [n, n, n, n, n, n, n, 5, 5, n],
-        [n, n, 6, 6, 6, n, n, n, n, n],
-        [n, n, n, n, n, n, 7, 7, 7, n],
+        [5, 5, 5, n, n, n, n, n, n, n],
+        [n, n, n, n, n, n, n, 6, 6, n],
+        [n, n, 7, 7, 7, n, n, n, n, n],
+        [n, n, n, n, n, n, 8, 8, 8, n],
         [n, n, n, n, n, n, n, n, n, n],
-        [n, 8, 8, 8, n, 9, 9, 9, n, n],
+        [n, 9, 9, 9, n, 10, 10, 10, n, n],
     ]
     result = get_number_mask(raw_matrix)
     assert result == number_mask
 
 
 def test_has_symbol_neighbor():
-    symbols = ["$", "#", "*"]
+    not_symbols = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."]
     raw_matrix = [
         ["4", "6", "7", ".", ".", "1", "1", "4", ".", "."],
         [".", ".", ".", "*", ".", ".", ".", ".", ".", "."],
@@ -46,8 +51,59 @@ def test_has_symbol_neighbor():
         [".", "6", "6", "4", ".", "5", "9", "8", ".", "."],
     ]
     loc_true = (2, 0)  # the 7
-    result = has_symbol_neighbor(raw_matrix, loc_true, symbols)
+    result = has_symbol_neighbor(raw_matrix, loc_true, not_symbols)
     assert result is True
     loc_true = (1, 4)  # the 1
-    result = has_symbol_neighbor(raw_matrix, loc_true, symbols)
+    result = has_symbol_neighbor(raw_matrix, loc_true, not_symbols)
     assert result is False
+
+
+def test_get_symbol_neighbor_mask():
+    not_symbols = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."]
+    raw_matrix = [
+        ["4", "6", "7", ".", ".", "1", "1", "4", ".", "."],
+        [".", ".", ".", "*", ".", ".", ".", ".", ".", "."],
+        [".", ".", "3", "5", ".", ".", "6", "3", "3", "."],
+        [".", ".", ".", ".", ".", ".", "#", ".", ".", "."],
+        ["6", "1", "7", "*", ".", ".", ".", ".", ".", "."],
+        [".", ".", ".", ".", ".", "+", ".", "5", "8", "."],
+        [".", ".", "5", "9", "2", ".", ".", ".", ".", "."],
+        [".", ".", ".", ".", ".", ".", "7", "5", "5", "."],
+        [".", ".", ".", "$", ".", "*", ".", ".", ".", "."],
+        [".", "6", "6", "4", ".", "5", "9", "8", ".", "."],
+    ]
+    f = False
+    S = False
+    T = True
+    symbol_neighbor_mask = [
+        [f, f, T, T, T, f, f, f, f, f],
+        [f, f, T, S, T, f, f, f, f, f],
+        [f, f, T, T, T, T, T, T, f, f],
+        [f, f, T, T, T, T, S, T, f, f],
+        [f, f, T, S, T, T, T, T, f, f],
+        [f, f, T, T, T, S, T, f, f, f],
+        [f, f, f, f, T, T, T, f, f, f],
+        [f, f, T, T, T, T, T, f, f, f],
+        [f, f, T, S, T, S, T, f, f, f],
+        [f, f, T, T, T, T, T, f, f, f],
+    ]
+    result = get_symbol_neighbor_mask(raw_matrix, not_symbols=not_symbols)
+    assert result == symbol_neighbor_mask
+
+
+def test_get_numbers():
+    raw_matrix = [
+        ["4", "6", "7", ".", ".", "1", "1", "4", ".", "."],
+        [".", ".", ".", "*", ".", ".", ".", ".", ".", "."],
+        [".", ".", "3", "5", ".", ".", "6", "3", "3", "."],
+        [".", ".", ".", ".", ".", ".", "#", ".", ".", "."],
+        ["6", "1", "7", "*", ".", ".", ".", ".", ".", "."],
+        [".", ".", ".", ".", ".", "+", ".", "5", "8", "."],
+        [".", ".", "5", "9", "2", ".", ".", ".", ".", "."],
+        [".", ".", ".", ".", ".", ".", "7", "5", "5", "."],
+        [".", ".", ".", "$", ".", "*", ".", ".", ".", "."],
+        [".", "6", "6", "4", ".", "5", "9", "8", ".", "."],
+    ]
+    result = get_numbers(raw_matrix)
+    expected_result = [467, 114, 35, 633, 617, 58, 592, 755, 664, 598]
+    assert result == expected_result
