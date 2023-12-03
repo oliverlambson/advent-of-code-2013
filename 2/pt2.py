@@ -1,7 +1,3 @@
-"""
-only 12 red cubes, 13 green cubes, and 14 blue cubes
-What is the sum of the IDs of those games?
-"""
 import logging
 from dataclasses import dataclass
 from enum import StrEnum
