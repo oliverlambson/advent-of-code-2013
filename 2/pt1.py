@@ -4,6 +4,7 @@ What is the sum of the IDs of those games?
 """
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import TypedDict
 from pathlib import Path
 import re
 
@@ -14,6 +15,9 @@ class Color(StrEnum):
     RED = "red"
     GREEN = "green"
     BLUE = "blue"
+
+
+SampleLimits = dict[Color, int]
 
 
 @dataclass
@@ -75,3 +79,25 @@ def parse_line(line: str) -> Game:
         sample_sets.append(SampleSet(samples))
 
     return Game(game_number, sample_sets)
+
+
+def is_sample_possible(sample: Sample, sample_limits: SampleLimits) -> bool:
+    limit = sample_limits[sample.color]
+    actual = sample.number
+    return actual <= limit
+
+
+def is_sample_set_possible(sample_set: SampleSet, sample_limits: SampleLimits) -> bool:
+    return all(map(lambda x: is_sample_possible(x, sample_limits), sample_set.samples))
+
+
+def main():
+    sample_limits: SampleLimits = {
+        Color.RED: 12,
+        Color.GREEN: 13,
+        Color.BLUE: 14,
+    }
+
+
+if __name__ == "__main__":
+    main()
