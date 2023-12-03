@@ -2,7 +2,6 @@ import re
 from pathlib import Path
 import logging
 
-import numpy as np
 
 RawMatrix = list[list[str]]
 Mask = list[list[int | bool | None]]
