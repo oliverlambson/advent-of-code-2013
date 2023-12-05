@@ -1,4 +1,9 @@
-from typing import Callable, overload
+"""
+This one was annoying.
+
+I tried to be clever with recursion b/c that's how the problem was written.
+Eventually realised that the recursion was unnecessary and just used trick and a lookup table
+"""
 from functools import lru_cache
 import re
 from dataclasses import dataclass
