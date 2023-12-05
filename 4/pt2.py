@@ -2,19 +2,26 @@
 This one was annoying.
 
 I tried to be clever with recursion b/c that's how the problem was written.
-Eventually realised that the recursion was unnecessary and just used trick and a lookup table
+Eventually realised that the recursion was unnecessary and just used a trick
+and a lookup table
 
 Workings:
-Card | Matches | Linked     | Score
-1    | (4)     | 2, 3, 4, 5 | 14 + 1 = 15
-2    | (2)     |    3, 4    |  6 + 1 =  7
-3    | (2)     |       4, 5 |  3 + 1 =  4
-4    | (1)     |          5 |  1 + 1 =  2
-5    | (0)     |            |  0 + 1 =  1
-6    | (0)     |            |  0 + 1 =  1
-                                     ----
-                                     = 30
-^ Start from bottom and work up, can use Card:Score as a lookup table to substitute in linked card scores
+-----+---------+------------+-------------+--------
+Card | Matches | Linked     | Score       | Notes
+-----+---------+------------+-------------+--------
+1    | (4)     | 2, 3, 4, 5 | 14 + 1 = 15 | end
+2    | (2)     |    3, 4    |  6 + 1 =  7 | ^
+3    | (2)     |       4, 5 |  3 + 1 =  4 | ^
+4    | (1)     |          5 |  1 + 1 =  2 | ^
+5    | (0)     |            |  0 + 1 =  1 | ^
+6    | (0)     |            |  0 + 1 =  1 | start
+-----+---------+------------+-------------+--------
+     |         |            |        = 30 |
+-----+---------+------------+-------------+--------
+                                            ^^^^
+                                            Start from bottom and work up, can
+                                            use Card:Score as a lookup table
+                                            to substitute in Card:Linked scores
 """
 from functools import lru_cache
 import re
