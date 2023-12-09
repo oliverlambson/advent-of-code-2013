@@ -1,7 +1,8 @@
 import logging
-from typing import Callable, Iterator
+from typing import Callable, Iterator, Iterable
 from pathlib import Path
 from dataclasses import dataclass
+from itertools import islice, chain
 
 from tqdm import tqdm
 
@@ -101,48 +102,64 @@ def get_target_numbers_len(raw: str) -> int:
     return length
 
 
-def main():
-    input_file_name = "input.txt"
-    loglevel = logging.INFO
-    TEST = False
-    if TEST:
-        loglevel = logging.DEBUG
-        input_file_name = "example_input.txt"
-    input_file = Path(__file__).parent / input_file_name
-    logging.basicConfig(level=loglevel)
-    input_file_txt = input_file.read_text().strip()
+def chunk_iterator[T](iterator: Iterator[T], chunk_size: int) -> Iterator[Iterable[T]]:
+    while True:
+        try:
+            first_item = next(iterator)
+        except StopIteration:
+            return
 
-    input_blocks = input_file_txt.split("\n\n")
-
-    targets_raw = input_blocks[0]
-    maps_raw = input_blocks[1:]
-
-    logging.info("Getting targets")
-    targets = Targets(
-        name=targets_raw.split(": ")[0],
-        numbers=get_target_numbers(targets_raw.split(": ")[1]),
-        length=get_target_numbers_len(targets_raw.split(": ")[1]),
-    )
-
-    mappings = {}
-    logging.info("Parsing maps")
-    for map_raw in maps_raw:
-        logging.debug(map_raw)
-        m = parse_map(map_raw)
-        mappings[m.base] = m
-        logging.debug("")
-
-    seed_to_location = derive_map("seed", "location", mappings)
-
-    logging.info("Mapping seed to location")
-    locations = map(seed_to_location, tqdm(targets.numbers, total=targets.length))
-    logging.info("Finding min location")
-    min_location = min(locations)
-    if TEST:
-        assert min_location == 46
-        print("✅ pass")
-    print(f"{min_location=}")
+        chunk = chain([first_item], islice(iterator, chunk_size - 1))
+        yield chunk
 
 
-if __name__ == "__main__":
-    main()
+# def main():
+input_file_name = "input.txt"
+loglevel = logging.INFO
+TEST = False
+TEST = True
+if TEST:
+    loglevel = logging.DEBUG
+    input_file_name = "example_input.txt"
+input_file = Path(__file__).parent / input_file_name
+logging.basicConfig(level=loglevel)
+input_file_txt = input_file.read_text().strip()
+
+input_blocks = input_file_txt.split("\n\n")
+
+targets_raw = input_blocks[0]
+maps_raw = input_blocks[1:]
+
+logging.info("Getting targets")
+targets = Targets(
+    name=targets_raw.split(": ")[0],
+    numbers=get_target_numbers(targets_raw.split(": ")[1]),
+    length=get_target_numbers_len(targets_raw.split(": ")[1]),
+)
+
+mappings = {}
+logging.info("Parsing maps")
+for map_raw in maps_raw:
+    logging.debug(map_raw)
+    m = parse_map(map_raw)
+    mappings[m.base] = m
+    logging.debug("")
+
+seed_to_location = derive_map("seed", "location", mappings)
+
+logging.info("Mapping seed to location")
+locations = map(seed_to_location, targets.numbers)
+n_processes = 8
+
+chunked_locations = chunk_iterator(locations, n_processes)
+logging.info("Finding min location")
+chunked_mins = map(min, chunked_locations)
+min_location = min(chunked_mins)
+if TEST:
+    assert min_location == 46
+    print("✅ pass")
+print(f"{min_location=}")
+
+
+# if __name__ == "__main__":
+#     main()
