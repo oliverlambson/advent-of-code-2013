@@ -1,13 +1,15 @@
 import logging
-from typing import Callable
+from typing import Callable, Iterator
 from pathlib import Path
 from dataclasses import dataclass
+
+from tqdm import tqdm
 
 
 @dataclass
 class Targets:
     name: str
-    numbers: list[int]
+    numbers: Iterator[int]
 
 
 @dataclass
@@ -24,6 +26,7 @@ def mapping_fn_factory(base_range, target_range) -> Callable[[int], int | None]:
             return None
         idx = x - base_range.start
         return target_range[idx]
+
     return inner
 
 
@@ -33,11 +36,11 @@ def parse_map(map_raw: str) -> Map:
     mappings_raw = map(lambda s: s.strip(), m[1:])
 
     mapping_fns: list[Callable[[int], int | None]] = []
-    for mapping_raw in (mappings_raw):
+    for mapping_raw in mappings_raw:
         range_strings = mapping_raw.split()
         target_start, base_start, length = list(map(int, range_strings))
-        base_range = range(base_start, base_start+length)
-        target_range = range(target_start, target_start+length)
+        base_range = range(base_start, base_start + length)
+        target_range = range(target_start, target_start + length)
         mapping_fn = mapping_fn_factory(base_range, target_range)
         mapping_fns.append(mapping_fn)
 
@@ -62,7 +65,9 @@ def parse_map(map_raw: str) -> Map:
     )
 
 
-def derive_map(base: str, target: str, mappings: dict[str, Map]) -> Callable[[int], int]:
+def derive_map(
+    base: str, target: str, mappings: dict[str, Map]
+) -> Callable[[int], int]:
     current_map = mappings.get(base)
     if current_map is None:
         raise Exception
@@ -72,13 +77,27 @@ def derive_map(base: str, target: str, mappings: dict[str, Map]) -> Callable[[in
     return lambda x: derive_map(current_map.target, target, mappings)(map_fn(x))
 
 
+def get_target_numbers(raw: str) -> Iterator[int]:
+    input_numbers = list(map(int, raw.split()))
+    n_tuples = [
+        (input_numbers[i], input_numbers[i + 1])
+        for i in range(0, len(input_numbers), 2)
+    ]
+    ranges = [range(start, start + n) for start, n in n_tuples]
+    for r in ranges:
+        for x in r:
+            yield x
+
+
 def main():
     input_file_name = "input.txt"
-    TEST = True
+    loglevel = logging.INFO
+    TEST = False
     if TEST:
-        # logging.basicConfig(level=logging.DEBUG)
+        loglevel = logging.DEBUG
         input_file_name = "example_input.txt"
     input_file = Path(__file__).parent / input_file_name
+    logging.basicConfig(level=loglevel)
     input_file_txt = input_file.read_text().strip()
 
     input_blocks = input_file_txt.split("\n\n")
@@ -86,21 +105,14 @@ def main():
     targets_raw = input_blocks[0]
     maps_raw = input_blocks[1:]
 
-    def get_target_numbers(raw: str) -> list[int]:
-        input_numbers =  list(map(int, raw.split()))
-        n_tuples = [(input_numbers[i], input_numbers[i+1]) for i in range(0, len(input_numbers), 2)]
-        ranges = [range(start, start+n) for start, n in n_tuples]
-        numbers = []
-        for r in ranges:
-            numbers.append(list(r))
-        return numbers
-
+    logging.info("Getting targets")
     targets = Targets(
         name=targets_raw.split(": ")[0],
-        numbers=get_target_numbers(targets_raw.split(": ")[1])
+        numbers=get_target_numbers(targets_raw.split(": ")[1]),
     )
 
     mappings = {}
+    logging.info("Parsing maps")
     for map_raw in maps_raw:
         logging.debug(map_raw)
         m = parse_map(map_raw)
@@ -108,7 +120,10 @@ def main():
         logging.debug("")
 
     seed_to_location = derive_map("seed", "location", mappings)
-    locations = map(seed_to_location, targets.numbers)
+
+    logging.info("Mapping seed to location")
+    locations = map(seed_to_location, tqdm(targets.numbers))
+    logging.info("Finding min location")
     min_location = min(locations)
     if TEST:
         assert min_location == 46
@@ -116,5 +131,5 @@ def main():
     print(f"{min_location=}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
