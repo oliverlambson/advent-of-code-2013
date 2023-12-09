@@ -10,6 +10,7 @@ from tqdm import tqdm
 class Targets:
     name: str
     numbers: Iterator[int]
+    length: int | None = None
 
 
 @dataclass
@@ -21,7 +22,7 @@ class Map:
 
 def mapping_fn_factory(base_range, target_range) -> Callable[[int], int | None]:
     def inner(x: int) -> int | None:
-        logging.debug(f"{base_range}:{target_range} {x}")
+        # logging.debug(f"{base_range}:{target_range} {x}")
         if x not in base_range:
             return None
         idx = x - base_range.start
@@ -45,17 +46,17 @@ def parse_map(map_raw: str) -> Map:
         mapping_fns.append(mapping_fn)
 
     def master_mapping_fn(x: int) -> int:
-        logging.debug(mapping_fns)
+        # logging.debug(mapping_fns)
         for mapping_fn in mapping_fns:
-            logging.debug(f"trying {mapping_fn}")
+            # logging.debug(f"trying {mapping_fn}")
             res = mapping_fn(x)
             if res is not None:
-                logging.debug(f"{base} {x} to {target} {res}")
+                # logging.debug(f"{base} {x} to {target} {res}")
                 return res
         # default
-        logging.debug(f"no mapping found for {x}")
+        # logging.debug(f"no mapping found for {x}")
         res = x
-        logging.debug(f"{base} {x} to {target} {res} (default)")
+        # logging.debug(f"{base} {x} to {target} {res} (default)")
         return res
 
     return Map(
@@ -89,6 +90,17 @@ def get_target_numbers(raw: str) -> Iterator[int]:
             yield x
 
 
+def get_target_numbers_len(raw: str) -> int:
+    input_numbers = list(map(int, raw.split()))
+    n_tuples = [
+        (input_numbers[i], input_numbers[i + 1])
+        for i in range(0, len(input_numbers), 2)
+    ]
+    ranges = [range(start, start + n) for start, n in n_tuples]
+    length = sum(map(len, ranges))
+    return length
+
+
 def main():
     input_file_name = "input.txt"
     loglevel = logging.INFO
@@ -109,6 +121,7 @@ def main():
     targets = Targets(
         name=targets_raw.split(": ")[0],
         numbers=get_target_numbers(targets_raw.split(": ")[1]),
+        length=get_target_numbers_len(targets_raw.split(": ")[1]),
     )
 
     mappings = {}
@@ -122,7 +135,7 @@ def main():
     seed_to_location = derive_map("seed", "location", mappings)
 
     logging.info("Mapping seed to location")
-    locations = map(seed_to_location, tqdm(targets.numbers))
+    locations = map(seed_to_location, tqdm(targets.numbers, total=targets.length))
     logging.info("Finding min location")
     min_location = min(locations)
     if TEST:
