@@ -151,16 +151,19 @@ def main():
     logging.info("Mapping seed to location")
     locations = map(seed_to_location, targets.numbers)
 
-
-    n_processes = 8
-    chunked_locations = chunk_iterator(locations, n_processes)
-
-    logging.info("Finding min location")
-    chunked_mins = pqdm(chunked_locations, min, n_jobs=n_processes, total=targets.length)
-    logging.info(f"{chunked_mins=}")
-
-    min_location = min(chunked_mins)
+    logging.info("Finding min location (expensive)")
+    min_location = min(tqdm(locations, total=targets.length))
     logging.info(f"{min_location=}")
+
+    # n_processes = 8
+    # chunked_locations = chunk_iterator(locations, n_processes)
+    #
+    # logging.info("Finding min location")
+    # chunked_mins = pqdm(chunked_locations, min, n_jobs=n_processes, total=targets.length)
+    # logging.info(f"{chunked_mins=}")
+    #
+    # min_location = min(chunked_mins)
+    # logging.info(f"{min_location=}"
 
     if TEST:
         assert min_location == 46
