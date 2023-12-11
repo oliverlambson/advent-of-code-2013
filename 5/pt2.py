@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from itertools import islice, chain
 
 from tqdm import tqdm
+from pqdm.processes import pqdm
 
 
 @dataclass
@@ -117,7 +118,7 @@ def main():
     input_file_name = "input.txt"
     loglevel = logging.INFO
     TEST = False
-    TEST = True
+    # TEST = True
     if TEST:
         # loglevel = logging.DEBUG
         input_file_name = "example_input.txt"
@@ -149,12 +150,13 @@ def main():
 
     logging.info("Mapping seed to location")
     locations = map(seed_to_location, targets.numbers)
-    n_processes = 8
-
-    chunked_locations = chunk_iterator(locations, n_processes)
-    logging.info("Finding min location")
-    chunked_mins = map(min, chunked_locations)
-    min_location = min(chunked_mins)
+    min_location = pqdm(locations, min, n_jobs=8, total=targets.length)
+    # n_processes = 8
+    #
+    # chunked_locations = chunk_iterator(locations, n_processes)
+    # logging.info("Finding min location")
+    # chunked_mins = map(min, chunked_locations)
+    # min_location = min(tqdm(chunked_mins, total=targets.length))
     if TEST:
         assert min_location == 46
         print("✅ pass")
