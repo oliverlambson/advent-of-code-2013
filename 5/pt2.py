@@ -118,7 +118,7 @@ def main():
     input_file_name = "input.txt"
     loglevel = logging.INFO
     TEST = False
-    # TEST = True
+    TEST = True
     if TEST:
         # loglevel = logging.DEBUG
         input_file_name = "example_input.txt"
@@ -150,17 +150,21 @@ def main():
 
     logging.info("Mapping seed to location")
     locations = map(seed_to_location, targets.numbers)
-    min_location = pqdm(locations, min, n_jobs=8, total=targets.length)
-    # n_processes = 8
-    #
-    # chunked_locations = chunk_iterator(locations, n_processes)
-    # logging.info("Finding min location")
-    # chunked_mins = map(min, chunked_locations)
-    # min_location = min(tqdm(chunked_mins, total=targets.length))
+
+
+    n_processes = 8
+    chunked_locations = chunk_iterator(locations, n_processes)
+
+    logging.info("Finding min location")
+    chunked_mins = pqdm(chunked_locations, min, n_jobs=n_processes, total=targets.length)
+    logging.info(f"{chunked_mins=}")
+
+    min_location = min(chunked_mins)
+    logging.info(f"{min_location=}")
+
     if TEST:
         assert min_location == 46
-        print("✅ pass")
-    print(f"{min_location=}")
+        logging.info("✅ pass")
 
 
 if __name__ == "__main__":
