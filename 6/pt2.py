@@ -1,4 +1,4 @@
-from math import sqrt, ceil, prod
+from math import sqrt, ceil
 from dataclasses import dataclass
 from pathlib import Path
 import logging
