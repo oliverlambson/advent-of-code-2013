@@ -24,10 +24,10 @@ class Word:
 
 
 def valid_word(letters: str, word: Word):
-    return all(letter in letters for letter in word.letters)
+    return all(letter in letters for letter in word.letters) and letters[-1] in word.letters
 
 def main():
-    letters = input("Enter letters: ")
+    letters = input("Enter letters (last == centre): ")
     TEST = False
     all_words = ALL_WORDS
     if TEST:
