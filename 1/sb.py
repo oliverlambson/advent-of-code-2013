@@ -24,6 +24,8 @@ class Word:
 
 
 def valid_word(letters: str, word: Word):
+    if len(word.word) < 4:
+        return False
     return all(letter in letters for letter in word.letters) and letters[-1] in word.letters
 
 def main():
